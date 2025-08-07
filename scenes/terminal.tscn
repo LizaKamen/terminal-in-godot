@@ -13,14 +13,17 @@ script = ExtResource("1_m430i")
 
 [node name="RichTextLabel" type="RichTextLabel" parent="."]
 custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
 offset_left = 55.0
 offset_top = 40.0
 offset_right = 1099.0
 offset_bottom = 593.0
+bbcode_enabled = true
 scroll_following = true
 autowrap_mode = 0
 
 [node name="LineEdit" type="LineEdit" parent="."]
+layout_mode = 0
 offset_left = -124.0
 offset_top = 46.0
 offset_right = -55.4375

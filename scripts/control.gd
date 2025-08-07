@@ -8,32 +8,25 @@ var careet_visible
 var saved_text : String
 var input_text : String
 var fastfetch_data = "I use Arch btw"
-var file_system : FileSystemNode
+var root : FileSystemNode
 var current_dir : FileSystemNode
-@export var pc_name : String = "lizakamen"
+@export var pc_name : String = "MyCoolPC"
+@export var user_name : String = "lizakamen"
 var welcom_msg : String
+var path : String
 
 func _ready() -> void:
 	line_edit.grab_focus()
-	file_system = FileSystemNode.new("home", true)
-	var dir1 = FileSystemNode.new("dir1", true)
-	var dir2 = FileSystemNode.new("dir2", true)
-	var file1 = FileSystemNode.new("file1", false)
-	var file2 = FileSystemNode.new("file2", false)
-	file_system.add_child_node(dir1)
-	file_system.add_child_node(dir2)
-	dir1.add_child_node(file1)
-	file_system.add_child_node(file2)
-	file_system.print_tree()
-	current_dir = file_system
-	welcom_msg = pc_name + ":" + current_dir.name + "#"
+	root = FileSystem.new().file_system_root
+	current_dir = root
+	path = "~"
+	welcom_msg = "[color=green]" + user_name + "@" + pc_name + "[/color]" + ":" + "[color=blue]" + path + "[/color]" + "$"
 	saved_text += welcom_msg
 	
 func _process(delta: float) -> void:
 	if(timer > blink_period):
 		careet_visible = not careet_visible
 		timer = 0
-		print(careet_visible)
 	timer += delta
 	if(careet_visible):	
 		rich_text_label.text = saved_text + input_text + "⎸"
@@ -49,16 +42,38 @@ func _on_line_edit_text_submitted(new_text: String) -> void:
 	saved_text += new_text + "\n"
 	line_edit.text = ""
 	input_text = ""
-	if (command_name == "echo"):
-		saved_text += args_string
-	elif (command_name == "fastfetch"):
-		saved_text += fastfetch_data
-	elif (command_name == "ls"):
-		saved_text += current_dir.ls()
-	elif (command_name == "pwd"):
-		saved_text += "/" + current_dir.name
-	elif (command_name == "cd"):
-		pass
-	else:
-		saved_text += "Command not found"
-	saved_text += "\n" + welcom_msg
+	
+	match command_name:
+		"echo":
+			saved_text += args_string + "\n"
+		"fastfetch":
+			saved_text += fastfetch_data + "\n"
+		"ls":
+			var ls = current_dir.print_children()
+			if(ls == ""):
+				pass
+			else:
+				saved_text += ls + "\n"
+		"pwd":
+			saved_text += "/" + current_dir.name + "\n"
+		"cd":
+			var output = FileSystemCommandsHandler.cd_handler(args_string, self)
+			if(output):
+				saved_text += output + "\n"
+			path = current_dir.get_full_path()
+			path = path.substr(0, path.length() - 1)
+			welcom_msg = "[color=green]" + user_name + "@" + pc_name + "[/color]" + ":" + "[color=blue]" + path + "[/color]" + "$"
+		"mkdir":
+			FileSystemCommandsHandler.mkdir_handler(args_string, self)
+		"touch":
+			FileSystemCommandsHandler.touch_handler(args_string, self)
+		"man":
+			saved_text += MiscellaneousCommandsHandler.man_handler(args_string) + "\n"
+		"cat":
+			for c : FileSystemNode in current_dir.children:
+				if(c.name == args_string and not c.is_directory):
+					saved_text += FileSystemCommandsHandler.cat_handler(c) + "\n"
+		_:
+			saved_text += "Command not found" + "\n"
+			
+	saved_text += welcom_msg
