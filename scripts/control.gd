@@ -2,6 +2,8 @@ extends Control
 
 @onready var rich_text_label = $RichTextLabel
 @onready var line_edit = $LineEdit
+var network_manager : NetworkManager
+var current_server : Server
 var timer = 0
 @export var blink_period = 0.5
 var careet_visible
@@ -16,6 +18,28 @@ var welcom_msg : String
 var path : String
 
 func _ready() -> void:
+	# networking
+	var server1 = Server.new()
+	server1.ip = "192.168.1.1"
+	
+	var server2 = Server.new()
+	server2.ip = "192.168.1.2"
+	
+	server1.neighbors.append(server2)
+	server2.neighbors.append(server1)
+	
+	network_manager = NetworkManager.new()
+	
+	network_manager.servers[server1.ip] = server1
+	network_manager.servers[server2.ip] = server2
+	
+	network_manager.connect_vpn(server1.ip)
+	network_manager.connect_vpn(server2.ip)
+	
+	current_server = server1
+	
+	# networking
+	
 	line_edit.grab_focus()
 	root = FileSystem.new().file_system_root
 	current_dir = root
@@ -73,6 +97,12 @@ func _on_line_edit_text_submitted(new_text: String) -> void:
 			for c : FileSystemNode in current_dir.children:
 				if(c.name == args_string and not c.is_directory):
 					saved_text += FileSystemCommandsHandler.cat_handler(c) + "\n"
+		"ping":
+			var res = current_server.ping(args_string)
+			if res.success:
+				saved_text += "64 bytes from %s: icmp_seq=1 ttl=64 time=%.1f ms\n" % [args_string, res.time]
+			else:
+				saved_text += "ping: %s\n" % res.error
 		_:
 			saved_text += "Command not found" + "\n"
 			

@@ -9,5 +9,7 @@ const commands : Dictionary = {
 	"mkdir" : "make dir",
 	"touch" : "create file",
 	"man" : "manual",
-	"cat" : "prints file content"
+	"cat" : "prints file content",
+	"ping" : "NAME
+	   ping - send ICMP ECHO_REQUEST to network hosts"
 }

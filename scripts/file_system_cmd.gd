@@ -16,7 +16,7 @@ static func cd_handler(args : String, context):
 static func mkdir_handler(folder_name : String, context):
 	var new_node = FileSystemNode.new(folder_name, true)
 	context.current_dir.add_child_node(new_node)
-	
+
 static func touch_handler(file_name: String, context):
 	var new_node = FileSystemNode.new(file_name, false)
 	context.current_dir.add_child_node(new_node)
